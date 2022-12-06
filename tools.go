@@ -15,7 +15,7 @@
  * limitations under the License.
  *
  */
-package puzzletools
+package main
 
 import (
 	"fmt"
@@ -27,18 +27,11 @@ import (
 
 func main() {
 	args := os.Args
-	inPath := args[1]
-	outPath := args[2]
-
-	if inPath[len(inPath)-1] != '/' {
-		inPath += "/"
-	}
-	if outPath[len(outPath)-1] != '/' {
-		outPath += "/"
-	}
+	inPath := addSlash(args[1])
+	outPath := addSlash(args[2])
 
 	tmplName := "main.html"
-	data, err := os.ReadFile(inPath + tmplName)
+	data, err := os.ReadFile(outPath + tmplName)
 	if err == nil {
 		tmpl := string(data)
 
@@ -46,13 +39,14 @@ func main() {
 			if err == nil && !d.IsDir() {
 				name := path[len(inPath):]
 				if name[len(name)-5:] == ".html" {
-					if name != tmplName {
-						var data []byte
-						data, err = os.ReadFile(path)
+					var data []byte
+					data, err = os.ReadFile(path)
+					if err == nil {
+						destPath := outPath + name
+						err = makeDirectory(destPath)
 						if err == nil {
 							body := strings.Replace(tmpl, "{{.Body}}", string(data), 1)
-							dest := outPath + name
-							err = os.WriteFile(dest, []byte(body), d.Type().Perm())
+							err = os.WriteFile(destPath, []byte(body), 0666)
 						}
 					}
 				}
@@ -64,4 +58,19 @@ func main() {
 	if err != nil {
 		fmt.Println("An error occurred :", err)
 	}
+}
+
+func addSlash(path string) string {
+	if path[len(path)-1] != '/' {
+		path += "/"
+	}
+	return path
+}
+
+func makeDirectory(path string) error {
+	i := len(path) - 1
+	for path[i] != '/' {
+		i--
+	}
+	return os.MkdirAll(path[:i], 0755)
 }
