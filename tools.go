@@ -18,6 +18,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/fs"
 	"os"
@@ -26,34 +27,78 @@ import (
 )
 
 func main() {
-	args := os.Args
-	inPath := addSlash(args[1])
-	outPath := addSlash(args[2])
+	outPath := addSlash(os.Args[1])
+	inPath := outPath + "fragments/"
 
-	tmplName := "main.html"
-	data, err := os.ReadFile(outPath + tmplName)
+	placeHolderCss := "{{.Css}}"
+	placeHolderJs := "{{.Js}}"
+	placeHolderBody := "{{.Body}}"
+
+	data, err := os.ReadFile(outPath + "templates/main.html")
 	if err == nil {
-		inSize := len(inPath)
 		tmpl := string(data)
 
-		err = filepath.WalkDir(inPath, func(path string, d fs.DirEntry, err error) error {
-			if err == nil && !d.IsDir() {
-				name := path[inSize:]
-				if name[len(name)-5:] == ".html" {
-					var data []byte
-					data, err = os.ReadFile(path)
-					if err == nil {
-						destPath := outPath + name
-						err = makeDirectory(destPath)
+		data, err = os.ReadFile(outPath + "static/main.css")
+		if err == nil {
+			cssIndex := strings.Index(tmpl, placeHolderCss)
+			part1 := tmpl[0:cssIndex]
+			cssIndexEnd := cssIndex + 9
+			jsIndex := strings.Index(tmpl, placeHolderJs)
+			part2 := tmpl[cssIndexEnd:jsIndex]
+			jsIndexEnd := jsIndex + 8
+			bodyIndex := strings.Index(tmpl, placeHolderBody)
+			part3 := tmpl[jsIndexEnd:bodyIndex]
+			bodyIndexEnd := bodyIndex + 10
+			part4 := tmpl[bodyIndexEnd:]
+
+			inSize := len(inPath)
+			initJs := "<script type=\"text/javascript\" src=\"/static/"
+			endJs := "\"/>\n"
+
+			size := len(data)
+
+			err = filepath.WalkDir(inPath, func(path string, d fs.DirEntry, err error) error {
+				if err == nil && !d.IsDir() {
+					destPath := outPath + path[inSize:]
+					if destPath[len(destPath)-5:] == ".html" {
+						var cssRef string
+						var jsRefs []string
+						var body string
+						cssRef, jsRefs, body, err = parseHtmlFragment(path)
 						if err == nil {
-							body := strings.Replace(tmpl, "{{.Body}}", string(data), 1)
-							err = os.WriteFile(destPath, []byte(body), 0644)
+							err = makeDirectory(destPath, len(d.Name()))
+							if err == nil {
+								var bodyBuilder strings.Builder
+								bodyBuilder.WriteString(part1)
+								bodyBuilder.WriteString(cssRef)
+								bodyBuilder.WriteString(part2)
+								for _, jsRef := range jsRefs {
+									bodyBuilder.WriteString(initJs)
+									bodyBuilder.WriteString(jsRef)
+									bodyBuilder.WriteString(endJs)
+								}
+								bodyBuilder.WriteString(part3)
+								bodyBuilder.WriteString(body)
+								bodyBuilder.WriteString(part4)
+								body := []byte(bodyBuilder.String())
+
+								err = os.WriteFile(destPath, body, 0644)
+							}
+						}
+					} else if destPath[len(destPath)-4:] == ".css" {
+						var dataSup []byte
+						dataSup, err = os.ReadFile(path)
+						if err == nil {
+							body := make([]byte, size+len(dataSup))
+							copy(body[:0], data)
+							copy(body[size:], dataSup)
+							err = os.WriteFile(destPath, body, 0644)
 						}
 					}
 				}
-			}
-			return err
-		})
+				return err
+			})
+		}
 	}
 
 	if err != nil {
@@ -68,10 +113,56 @@ func addSlash(path string) string {
 	return path
 }
 
-func makeDirectory(path string) error {
-	i := len(path) - 1
-	for path[i] != '/' {
-		i--
+func parseHtmlFragment(path string) (string, []string, string, error) {
+	var cssRef string
+	var jsRefs []string
+	var body string
+
+	file, err := os.Open(path)
+	if err == nil {
+		jsRefs = make([]string, 0)
+		var bodyBuilder strings.Builder
+
+		cssStarted := false
+		jsStarted := false
+		bodyStarted := false
+
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			line := scanner.Text()
+			trimmed := strings.TrimSpace(line)
+			if trimmed != "" && trimmed[0] != '#' {
+				if bodyStarted {
+					bodyBuilder.WriteString(line)
+					bodyBuilder.WriteString("\n")
+				} else if jsStarted {
+					if trimmed == "Body:" {
+						bodyStarted = true
+					} else {
+						jsRefs = append(jsRefs, trimmed)
+					}
+				} else if cssStarted {
+					cssRef = trimmed
+					cssStarted = false
+				} else if trimmed == "Js:" {
+					jsStarted = true
+				} else if trimmed == "Body:" {
+					bodyStarted = true
+				} else {
+					// Should be the start of css zone.
+					cssStarted = true
+				}
+			}
+		}
+
+		if err = scanner.Err(); err == nil {
+			body = bodyBuilder.String()
+		}
 	}
+	return cssRef, jsRefs, body, err
+}
+
+func makeDirectory(path string, size int) error {
+	i := len(path) - size
 	return os.MkdirAll(path[:i], 0755)
 }
