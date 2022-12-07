@@ -33,11 +33,12 @@ func main() {
 	tmplName := "main.html"
 	data, err := os.ReadFile(outPath + tmplName)
 	if err == nil {
+		inSize := len(inPath)
 		tmpl := string(data)
 
 		err = filepath.WalkDir(inPath, func(path string, d fs.DirEntry, err error) error {
 			if err == nil && !d.IsDir() {
-				name := path[len(inPath):]
+				name := path[inSize:]
 				if name[len(name)-5:] == ".html" {
 					var data []byte
 					data, err = os.ReadFile(path)
@@ -46,7 +47,7 @@ func main() {
 						err = makeDirectory(destPath)
 						if err == nil {
 							body := strings.Replace(tmpl, "{{.Body}}", string(data), 1)
-							err = os.WriteFile(destPath, []byte(body), 0666)
+							err = os.WriteFile(destPath, []byte(body), 0644)
 						}
 					}
 				}
