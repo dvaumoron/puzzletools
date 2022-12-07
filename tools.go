@@ -55,7 +55,7 @@ func main() {
 			initJs := "<script type=\"text/javascript\" src=\"/static/"
 			endJs := "\"/>\n"
 
-			size := len(data)
+			cssBody := string(data)
 
 			err = filepath.WalkDir(inPath, func(path string, d fs.DirEntry, err error) error {
 				if err == nil && !d.IsDir() {
@@ -89,10 +89,11 @@ func main() {
 						var dataSup []byte
 						dataSup, err = os.ReadFile(path)
 						if err == nil {
-							body := make([]byte, size+len(dataSup))
-							copy(body[:0], data)
-							copy(body[size:], dataSup)
-							err = os.WriteFile(destPath, body, 0644)
+							err = makeDirectory(destPath, len(d.Name()))
+							if err == nil {
+								body := []byte(cssBody + string(dataSup))
+								err = os.WriteFile(destPath, body, 0644)
+							}
 						}
 					}
 				}
