@@ -42,13 +42,13 @@ func main() {
 		if err == nil {
 			cssIndex := strings.Index(tmpl, placeHolderCss)
 			part1 := tmpl[0:cssIndex]
-			cssIndexEnd := cssIndex + 9
+			cssIndexEnd := cssIndex + 8
 			jsIndex := strings.Index(tmpl, placeHolderJs)
 			part2 := tmpl[cssIndexEnd:jsIndex]
-			jsIndexEnd := jsIndex + 8
+			jsIndexEnd := jsIndex + 7
 			bodyIndex := strings.Index(tmpl, placeHolderBody)
 			part3 := tmpl[jsIndexEnd:bodyIndex]
-			bodyIndexEnd := bodyIndex + 10
+			bodyIndexEnd := bodyIndex + 9
 			part4 := tmpl[bodyIndexEnd:]
 
 			inSize := len(inPath)
