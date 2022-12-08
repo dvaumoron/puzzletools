@@ -61,9 +61,10 @@ func main() {
 				if err == nil && !d.IsDir() {
 					destPath := outPath + path[inSize:]
 					if destPath[len(destPath)-5:] == ".html" {
-						var cssRef string
+						cssRef := ""
 						var jsRefs []string
-						var body string
+						body := ""
+
 						cssRef, jsRefs, body, err = parseHtmlFragment(path)
 						if err == nil {
 							err = makeDirectory(destPath, len(d.Name()))
@@ -115,9 +116,9 @@ func addSlash(path string) string {
 }
 
 func parseHtmlFragment(path string) (string, []string, string, error) {
-	var cssRef string
+	cssRef := ""
 	var jsRefs []string
-	var body string
+	body := ""
 
 	file, err := os.Open(path)
 	if err == nil {
