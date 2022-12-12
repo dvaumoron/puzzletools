@@ -27,80 +27,62 @@ import (
 )
 
 func main() {
-	outPath := addSlash(os.Args[1])
-	inPath := outPath + "fragments/"
+	projectPath := os.Args[1]
+	if last := len(projectPath) - 1; projectPath[last] == '/' {
+		projectPath = projectPath[:last]
+	}
+	inPath := projectPath + "/fragments/"
+	outPath := projectPath + "/templates/"
 
-	placeHolderCss := "{{.Css}}"
-	placeHolderJs := "{{.Js}}"
-	placeHolderBody := "{{.Body}}"
-
-	data, err := os.ReadFile(outPath + "templates/main.html")
+	data, err := os.ReadFile(outPath + "main.html")
 	if err == nil {
 		tmpl := string(data)
 
-		data, err = os.ReadFile(outPath + "static/main.css")
-		if err == nil {
-			cssIndex := strings.Index(tmpl, placeHolderCss)
-			part1 := tmpl[0:cssIndex]
-			cssIndexEnd := cssIndex + 8
-			jsIndex := strings.Index(tmpl, placeHolderJs)
-			part2 := tmpl[cssIndexEnd:jsIndex]
-			jsIndexEnd := jsIndex + 7
-			bodyIndex := strings.Index(tmpl, placeHolderBody)
-			part3 := tmpl[jsIndexEnd:bodyIndex]
-			bodyIndexEnd := bodyIndex + 9
-			part4 := tmpl[bodyIndexEnd:]
+		jsIndex := strings.Index(tmpl, "{{.Js}}")
+		part1 := tmpl[0:jsIndex]
+		jsIndexEnd := jsIndex + 7
+		bodyIndex := strings.Index(tmpl, "{{.Body}}")
+		part2 := tmpl[jsIndexEnd:bodyIndex]
+		bodyIndexEnd := bodyIndex + 9
+		part3 := tmpl[bodyIndexEnd:]
 
-			inSize := len(inPath)
-			initJs := "<script type=\"text/javascript\" src=\"/static/"
-			endJs := "\"/>\n"
+		inSize := len(inPath)
+		initJs := "<script type=\"text/javascript\" src=\"/static/"
+		endJs := "\"/>\n"
 
-			cssBody := string(data)
+		err = filepath.WalkDir(inPath, func(path string, d fs.DirEntry, err error) error {
+			if err == nil && !d.IsDir() {
+				destPath := outPath + path[inSize:]
+				if destPath[len(destPath)-5:] == ".html" {
+					var jsRefs []string
+					var bodyLines []string
 
-			err = filepath.WalkDir(inPath, func(path string, d fs.DirEntry, err error) error {
-				if err == nil && !d.IsDir() {
-					destPath := outPath + path[inSize:]
-					if destPath[len(destPath)-5:] == ".html" {
-						cssRef := ""
-						var jsRefs []string
-						body := ""
-
-						cssRef, jsRefs, body, err = parseHtmlFragment(path)
+					jsRefs, bodyLines, err = parseHtmlFragment(path)
+					if err == nil {
+						err = makeDirectory(destPath, len(d.Name()))
 						if err == nil {
-							err = makeDirectory(destPath, len(d.Name()))
-							if err == nil {
-								var bodyBuilder strings.Builder
-								bodyBuilder.WriteString(part1)
-								bodyBuilder.WriteString(cssRef)
-								bodyBuilder.WriteString(part2)
-								for _, jsRef := range jsRefs {
-									bodyBuilder.WriteString(initJs)
-									bodyBuilder.WriteString(jsRef)
-									bodyBuilder.WriteString(endJs)
-								}
-								bodyBuilder.WriteString(part3)
-								bodyBuilder.WriteString(body)
-								bodyBuilder.WriteString(part4)
-								body := []byte(bodyBuilder.String())
+							var bodyBuilder strings.Builder
+							bodyBuilder.WriteString(part1)
+							for _, jsRef := range jsRefs {
+								bodyBuilder.WriteString(initJs)
+								bodyBuilder.WriteString(jsRef)
+								bodyBuilder.WriteString(endJs)
+							}
+							bodyBuilder.WriteString(part2)
+							for _, line := range bodyLines {
+								bodyBuilder.WriteString(line)
+								bodyBuilder.WriteByte('\n')
+							}
+							bodyBuilder.WriteString(part3)
+							body := []byte(bodyBuilder.String())
 
-								err = os.WriteFile(destPath, body, 0644)
-							}
-						}
-					} else if destPath[len(destPath)-4:] == ".css" {
-						var dataSup []byte
-						dataSup, err = os.ReadFile(path)
-						if err == nil {
-							err = makeDirectory(destPath, len(d.Name()))
-							if err == nil {
-								body := []byte(cssBody + string(dataSup))
-								err = os.WriteFile(destPath, body, 0644)
-							}
+							err = os.WriteFile(destPath, body, 0644)
 						}
 					}
 				}
-				return err
-			})
-		}
+			}
+			return err
+		})
 	}
 
 	if err != nil {
@@ -108,63 +90,39 @@ func main() {
 	}
 }
 
-func addSlash(path string) string {
-	if path[len(path)-1] != '/' {
-		path += "/"
-	}
-	return path
-}
-
-func parseHtmlFragment(path string) (string, []string, string, error) {
-	cssRef := ""
+func parseHtmlFragment(path string) ([]string, []string, error) {
 	var jsRefs []string
-	body := ""
+	var bodyLines []string
 
 	file, err := os.Open(path)
 	if err == nil {
-		jsRefs = make([]string, 0)
-		var bodyBuilder strings.Builder
-
-		cssStarted := false
-		jsStarted := false
-		bodyStarted := false
-
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
-			line := scanner.Text()
-			trimmed := strings.TrimSpace(line)
-			if trimmed != "" && trimmed[0] != '#' {
-				if bodyStarted {
-					bodyBuilder.WriteString(line)
-					bodyBuilder.WriteString("\n")
-				} else if jsStarted {
-					if trimmed == "Body:" {
-						bodyStarted = true
-					} else {
-						jsRefs = append(jsRefs, trimmed)
-					}
-				} else if cssStarted {
-					cssRef = trimmed
-					cssStarted = false
-				} else if trimmed == "Js:" {
-					jsStarted = true
-				} else if trimmed == "Body:" {
-					bodyStarted = true
+			if trimmed := strings.TrimSpace(scanner.Text()); trimmed != "" {
+				if trimmed == "Body:" {
+					break
 				} else {
-					// Should be the start of css zone.
-					cssStarted = true
+					jsRefs = append(jsRefs, trimmed)
 				}
+			}
+		}
+		for scanner.Scan() {
+			if trimmed := strings.TrimSpace(scanner.Text()); trimmed != "" {
+				bodyLines = append(bodyLines, trimmed)
 			}
 		}
 
 		if err = scanner.Err(); err == nil {
-			body = bodyBuilder.String()
+			if len(bodyLines) == 0 {
+				bodyLines = jsRefs
+				jsRefs = nil
+			}
 		}
 	}
-	return cssRef, jsRefs, body, err
+	return jsRefs, bodyLines, err
 }
 
-func makeDirectory(path string, size int) error {
-	i := len(path) - size
+func makeDirectory(path string, nameSize int) error {
+	i := len(path) - nameSize
 	return os.MkdirAll(path[:i], 0755)
 }
