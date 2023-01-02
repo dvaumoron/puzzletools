@@ -96,6 +96,8 @@ func parseHtmlFragment(path string) ([]string, []string, error) {
 
 	file, err := os.Open(path)
 	if err == nil {
+		defer file.Close()
+
 		scanner := bufio.NewScanner(file)
 		for scanner.Scan() {
 			if trimmed := strings.TrimSpace(scanner.Text()); trimmed != "" {
