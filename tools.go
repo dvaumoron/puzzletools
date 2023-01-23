@@ -91,37 +91,38 @@ func main() {
 }
 
 func parseHtmlFragment(path string) ([]string, []string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	defer file.Close()
+
 	var jsRefs []string
 	var bodyLines []string
-
-	file, err := os.Open(path)
-	if err == nil {
-		defer file.Close()
-
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			if trimmed := strings.TrimSpace(scanner.Text()); trimmed != "" {
-				if trimmed == "Body:" {
-					break
-				} else {
-					jsRefs = append(jsRefs, trimmed)
-				}
-			}
-		}
-		for scanner.Scan() {
-			if trimmed := strings.TrimSpace(scanner.Text()); trimmed != "" {
-				bodyLines = append(bodyLines, trimmed)
-			}
-		}
-
-		if err = scanner.Err(); err == nil {
-			if len(bodyLines) == 0 {
-				bodyLines = jsRefs
-				jsRefs = nil
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		if trimmed := strings.TrimSpace(scanner.Text()); trimmed != "" {
+			if trimmed == "Body:" {
+				break
+			} else {
+				jsRefs = append(jsRefs, trimmed)
 			}
 		}
 	}
-	return jsRefs, bodyLines, err
+	for scanner.Scan() {
+		if trimmed := strings.TrimSpace(scanner.Text()); trimmed != "" {
+			bodyLines = append(bodyLines, trimmed)
+		}
+	}
+	if err = scanner.Err(); err != nil {
+		return nil, nil, err
+	}
+
+	if len(bodyLines) == 0 {
+		bodyLines = jsRefs
+		jsRefs = nil
+	}
+	return jsRefs, bodyLines, nil
 }
 
 func makeDirectory(path string, nameSize int) error {
