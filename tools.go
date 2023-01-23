@@ -104,9 +104,8 @@ func parseHtmlFragment(path string) ([]string, []string, error) {
 		if trimmed := strings.TrimSpace(scanner.Text()); trimmed != "" {
 			if trimmed == "Body:" {
 				break
-			} else {
-				jsRefs = append(jsRefs, trimmed)
 			}
+			jsRefs = append(jsRefs, trimmed)
 		}
 	}
 	for scanner.Scan() {
