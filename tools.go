@@ -26,6 +26,11 @@ import (
 	"strings"
 )
 
+const headerPlaceHolder = "{{.WidgetHeader}}"
+const headerPlaceHolderLen = len(headerPlaceHolder)
+const bodyPlaceHolder = "{{.WidgetBody}}"
+const bodyPlaceHolderLen = len(bodyPlaceHolder)
+
 func main() {
 	projectPath := os.Args[1]
 	if last := len(projectPath) - 1; projectPath[last] == '/' {
@@ -38,12 +43,12 @@ func main() {
 	if err == nil {
 		tmpl := string(data)
 
-		jsIndex := strings.Index(tmpl, "{{.WidgetHeader}}")
+		jsIndex := strings.Index(tmpl, headerPlaceHolder)
 		part1 := tmpl[:jsIndex]
-		jsIndexEnd := jsIndex + 7
-		bodyIndex := strings.Index(tmpl, "{{.WidgetBody}}")
+		jsIndexEnd := jsIndex + headerPlaceHolderLen
+		bodyIndex := strings.Index(tmpl[jsIndexEnd:], bodyPlaceHolder) + jsIndexEnd
 		part2 := tmpl[jsIndexEnd:bodyIndex]
-		bodyIndexEnd := bodyIndex + 9
+		bodyIndexEnd := bodyIndex + bodyPlaceHolderLen
 		part3 := tmpl[bodyIndexEnd:]
 
 		inSize := len(inPath)
