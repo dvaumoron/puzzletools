@@ -39,7 +39,7 @@ func main() {
 		tmpl := string(data)
 
 		jsIndex := strings.Index(tmpl, "{{.WidgetHeader}}")
-		part1 := tmpl[0:jsIndex]
+		part1 := tmpl[:jsIndex]
 		jsIndexEnd := jsIndex + 7
 		bodyIndex := strings.Index(tmpl, "{{.WidgetBody}}")
 		part2 := tmpl[jsIndexEnd:bodyIndex]
