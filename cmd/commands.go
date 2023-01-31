@@ -20,17 +20,44 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
+const defaultServiceAddr = "localhost:50051"
+
 var rootCmd = &cobra.Command{
-	Use:   "puzzletools",
+	Use:   "puzzletools [command]",
 	Short: "puzzletools includes diverse features helping in puzzle project.",
 	Long: `puzzletools includes the following features:
-				- prepare templates
-				- init login db
-				- init right db`,
+- prepare templates
+- init login db
+- init right db`,
+}
+
+var cfgFile string
+
+func init() {
+	cobra.OnInitialize(initConfig)
+
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", ".env", "config file")
+}
+
+func initConfig() {
+	viper.SetConfigFile(cfgFile)
+
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+	viper.AutomaticEnv()
+
+	viper.SetDefault(rightServiceAddrName, defaultServiceAddr)
+	viper.SetDefault(saltServiceAddrName, defaultServiceAddr)
+	viper.SetDefault(loginServiceAddrName, defaultServiceAddr)
+
+	if err := viper.ReadInConfig(); err == nil {
+		fmt.Println("Using config file :", viper.ConfigFileUsed())
+	}
 }
 
 func Execute() {

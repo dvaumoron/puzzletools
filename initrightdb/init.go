@@ -1,6 +1,6 @@
 /*
  *
- * Copyright 2022 puzzletools authors.
+ * Copyright 2023 puzzletools authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,28 +30,6 @@ import (
 const adminGroupId = 1 // groupId corresponding to role administration
 const administratorName = "Administrator"
 
-func InitAdminRole(rightServiceAddr string) error {
-	conn, err := grpc.Dial(rightServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-
-	response, err := pb.NewRightClient(conn).UpdateRole(ctx, &pb.Role{
-		Name: administratorName, ObjectId: adminGroupId, List: []pb.RightAction{
-			pb.RightAction_ACCESS, pb.RightAction_CREATE,
-			pb.RightAction_UPDATE, pb.RightAction_DELETE,
-		},
-	})
-	if err == nil && response.Success {
-		fmt.Println(administratorName, "role created.")
-	}
-	return err
-}
-
 func MakeUserAdmin(rightServiceAddr string, id uint64) error {
 	conn, err := grpc.Dial(rightServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -62,7 +40,21 @@ func MakeUserAdmin(rightServiceAddr string, id uint64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	response, err := pb.NewRightClient(conn).UpdateUser(ctx, &pb.UserRight{
+	client := pb.NewRightClient(conn)
+	response, err := client.UpdateRole(ctx, &pb.Role{
+		Name: administratorName, ObjectId: adminGroupId, List: []pb.RightAction{
+			pb.RightAction_ACCESS, pb.RightAction_CREATE,
+			pb.RightAction_UPDATE, pb.RightAction_DELETE,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if response.Success {
+		fmt.Println(administratorName, "role updated.")
+	}
+
+	response, err = client.UpdateUser(ctx, &pb.UserRight{
 		UserId: id, List: []*pb.RoleRequest{{Name: administratorName, ObjectId: adminGroupId}},
 	})
 	if err == nil && response.Success {
