@@ -15,10 +15,27 @@
  * limitations under the License.
  *
  */
-package main
+package cmd
 
-import "github.com/dvaumoron/puzzletools/cmd"
+import (
+	"fmt"
+	"os"
 
-func main() {
-	cmd.Execute()
+	"github.com/spf13/cobra"
+)
+
+var rootCmd = &cobra.Command{
+	Use:   "puzzletools",
+	Short: "puzzletools includes diverse features helping in puzzle project.",
+	Long: `puzzletools includes the following features:
+				- prepare templates
+				- init login db
+				- init right db`,
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 }
