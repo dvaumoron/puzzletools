@@ -20,13 +20,12 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"strings"
 
+	"github.com/joho/godotenv"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-const defaultServiceAddr = "localhost:50051"
+const UnknownServiceAddr = "service address unknown"
 
 var rootCmd = &cobra.Command{
 	Use:   "puzzletools [command]",
@@ -37,27 +36,14 @@ var rootCmd = &cobra.Command{
 - init right db`,
 }
 
-var cfgFile string
-
 func init() {
-	cobra.OnInitialize(initConfig)
-
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", ".env", "config file")
-}
-
-func initConfig() {
-	viper.SetConfigFile(cfgFile)
-
-	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
-	viper.AutomaticEnv()
-
-	viper.SetDefault(rightServiceAddrName, defaultServiceAddr)
-	viper.SetDefault(saltServiceAddrName, defaultServiceAddr)
-	viper.SetDefault(loginServiceAddrName, defaultServiceAddr)
-
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file :", viper.ConfigFileUsed())
+	if godotenv.Overload() == nil {
+		fmt.Println("Loaded .env file")
 	}
+
+	rootCmd.AddCommand(newInitRightCmd(os.Getenv("RIGHT_SERVICE_ADDR")))
+	rootCmd.AddCommand(newInitLoginCmd(os.Getenv("SALT_SERVICE_ADDR"), os.Getenv("LOGIN_SERVICE_ADDR")))
+	rootCmd.AddCommand(newPrepareCmd())
 }
 
 func Execute() {

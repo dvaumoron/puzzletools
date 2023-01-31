@@ -18,37 +18,38 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/dvaumoron/puzzletools/initlogindb"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
-
-const saltServiceAddrName = "salt-service-addr"
-const loginServiceAddrName = "login-service-addr"
 
 var saltServiceAddr string
 var loginServiceAddr string
 
-func init() {
+func newInitLoginCmd(defaultSaltServiceAddr string, defaultLoginServiceAddr string) *cobra.Command {
 	initLoginCmd := &cobra.Command{
 		Use:   "initlogin userLogin userPassword",
 		Short: "init login database.",
 		Long:  "init login database : create an user with the arguments",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if saltServiceAddr == "" || loginServiceAddr == "" {
+				return errors.New(UnknownServiceAddr)
+			}
 			return initlogindb.InitUser(saltServiceAddr, loginServiceAddr, args[0], args[1])
 		},
 	}
 
 	initLoginCmdFlags := initLoginCmd.Flags()
 	initLoginCmdFlags.StringVar(
-		&saltServiceAddr, saltServiceAddrName, "", "Address of the salt service",
+		&saltServiceAddr, "salt-service-addr", defaultSaltServiceAddr,
+		"Address of the salt service",
 	)
-	viper.BindPFlag(saltServiceAddrName, initLoginCmdFlags.Lookup(saltServiceAddrName))
 	initLoginCmdFlags.StringVar(
-		&loginServiceAddr, loginServiceAddrName, "", "Address of the login service",
+		&loginServiceAddr, "login-service-addr", defaultLoginServiceAddr,
+		"Address of the login service",
 	)
-	viper.BindPFlag(loginServiceAddrName, initLoginCmdFlags.Lookup(loginServiceAddrName))
 
-	rootCmd.AddCommand(initLoginCmd)
+	return initLoginCmd
 }

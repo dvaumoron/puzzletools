@@ -24,8 +24,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func init() {
-	rootCmd.AddCommand(&cobra.Command{
+func newPrepareCmd() *cobra.Command {
+	return &cobra.Command{
 		Use:   "prepare [projectPath]",
 		Short: "prepare templates.",
 		Long: `prepare templates :
@@ -46,5 +46,5 @@ func init() {
 			}
 			return preparetemplates.PrepareTemplates(path)
 		},
-	})
+	}
 }

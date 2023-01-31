@@ -18,18 +18,16 @@
 package cmd
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/dvaumoron/puzzletools/initrightdb"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
-
-const rightServiceAddrName = "right-service-addr"
 
 var rightServiceAddr string
 
-func init() {
+func newInitRightCmd(defaultRightServiceAddr string) *cobra.Command {
 	initRightCmd := &cobra.Command{
 		Use:   "initright userId",
 		Short: "init right database.",
@@ -42,14 +40,17 @@ func init() {
 			if err != nil {
 				return err
 			}
+			if rightServiceAddr == "" {
+				return errors.New(UnknownServiceAddr)
+			}
 			return initrightdb.MakeUserAdmin(rightServiceAddr, userId)
 		},
 	}
 
 	initRightCmd.Flags().StringVar(
-		&rightServiceAddr, rightServiceAddrName, "", "Address of the right service",
+		&rightServiceAddr, "right-service-addr", defaultRightServiceAddr,
+		"Address of the right service",
 	)
-	viper.BindPFlag(rightServiceAddrName, initRightCmd.Flags().Lookup(rightServiceAddrName))
 
-	rootCmd.AddCommand(initRightCmd)
+	return initRightCmd
 }
