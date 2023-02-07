@@ -51,7 +51,7 @@ func MakeUserAdmin(rightServiceAddr string, id uint64) error {
 		return err
 	}
 	if response.Success {
-		fmt.Println(administratorName, "role updated.")
+		fmt.Println(administratorName, "role created.")
 	}
 
 	response, err = client.UpdateUser(ctx, &pb.UserRight{

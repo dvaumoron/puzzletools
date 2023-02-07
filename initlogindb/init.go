@@ -45,7 +45,7 @@ func InitUser(saltServiceAddr string, loginServiceAddr string, login string, pas
 
 	response, err := pb.NewLoginClient(conn).Register(ctx, &pb.LoginRequest{Login: login, Salted: salted})
 	if err == nil && response.Success {
-		fmt.Println("Create user with id :", response.Id)
+		fmt.Println("User with id", response.Id, "created.")
 	}
 	return err
 }
