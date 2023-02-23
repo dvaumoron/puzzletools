@@ -5,14 +5,14 @@ go 1.19
 require (
 	github.com/dvaumoron/puzzleloginservice v1.7.0
 	github.com/dvaumoron/puzzlerightservice v1.3.0
-	github.com/dvaumoron/puzzlesaltclient v1.0.0
+	github.com/dvaumoron/puzzlesaltclient v1.0.1
 	github.com/joho/godotenv v1.4.0
 	github.com/spf13/cobra v1.6.1
 	google.golang.org/grpc v1.52.3
 )
 
 require (
-	github.com/dvaumoron/puzzlesaltservice v1.0.0 // indirect
+	github.com/dvaumoron/puzzlesaltservice v1.0.1 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
