@@ -30,6 +30,9 @@ const headerPlaceHolderLen = len(headerPlaceHolder)
 const bodyPlaceHolder = "{{.WidgetBody}}"
 const bodyPlaceHolderLen = len(bodyPlaceHolder)
 
+const initJs = "<script type=\"text/javascript\" src=\"/static/"
+const endJs = "\"/>\n"
+
 func PrepareTemplates(projectPath string) error {
 	if last := len(projectPath) - 1; projectPath[last] == '/' {
 		projectPath = projectPath[:last]
@@ -53,8 +56,6 @@ func PrepareTemplates(projectPath string) error {
 	part3 := tmpl[bodyIndexEnd:]
 
 	inSize := len(inPath)
-	initJs := "<script type=\"text/javascript\" src=\"/static/"
-	endJs := "\"/>\n"
 
 	return filepath.WalkDir(inPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {

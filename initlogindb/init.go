@@ -28,19 +28,22 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+const timeOut = 5 * time.Second
+
 func InitUser(saltServiceAddr string, loginServiceAddr string, login string, password string) error {
-	salted, err := saltclient.Make(saltServiceAddr).Salt(login, password)
+	dialOptions := grpc.WithTransportCredentials(insecure.NewCredentials())
+	salted, err := saltclient.Make(saltServiceAddr, dialOptions, timeOut).Salt(login, password)
 	if err != nil {
 		return err
 	}
 
-	conn, err := grpc.Dial(loginServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.Dial(loginServiceAddr, dialOptions)
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), timeOut)
 	defer cancel()
 
 	response, err := pb.NewLoginClient(conn).Register(ctx, &pb.LoginRequest{Login: login, Salted: salted})
