@@ -33,7 +33,8 @@ var rootCmd = &cobra.Command{
 	Long: `puzzletools includes the following features:
 - prepare templates
 - init login db
-- init right db`,
+- init right db
+- check password`,
 }
 
 func init() {
@@ -44,6 +45,7 @@ func init() {
 	rootCmd.AddCommand(newInitRightCmd(os.Getenv("RIGHT_SERVICE_ADDR")))
 	rootCmd.AddCommand(newInitLoginCmd(os.Getenv("SALT_SERVICE_ADDR"), os.Getenv("LOGIN_SERVICE_ADDR")))
 	rootCmd.AddCommand(newPrepareCmd())
+	rootCmd.AddCommand(newCheckPassword(os.Getenv("DEFAULT_PASSWORD")))
 }
 
 func Execute() {

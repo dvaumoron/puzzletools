@@ -8,6 +8,7 @@ require (
 	github.com/dvaumoron/puzzlesaltclient v1.1.2
 	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.7.0
+	github.com/wagslane/go-password-validator v0.3.0
 	google.golang.org/grpc v1.54.0
 )
 
