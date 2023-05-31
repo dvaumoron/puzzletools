@@ -15,6 +15,7 @@
  * limitations under the License.
  *
  */
+
 package main
 
 import "github.com/dvaumoron/puzzletools/cmd"
