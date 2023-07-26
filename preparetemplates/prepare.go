@@ -64,7 +64,16 @@ func PrepareTemplates(projectPath string) error {
 		}
 
 		destPath := outPath + path[inSize:]
-		if destPath[len(destPath)-5:] != ".html" {
+		dotIndex := strings.LastIndexByte(destPath, '.')
+		if dotIndex == -1 {
+			return nil
+		}
+		computeBody := noCompute
+		switch ext := destPath[dotIndex+1:]; ext {
+		case "html":
+		case "md":
+			computeBody = markdownCompute
+		default:
 			return nil
 		}
 
@@ -86,7 +95,7 @@ func PrepareTemplates(projectPath string) error {
 			bodyBuilder.WriteString(endJs)
 		}
 		bodyBuilder.WriteString(part2)
-		for _, line := range bodyLines {
+		for _, line := range computeBody(bodyLines) {
 			bodyBuilder.WriteString(line)
 			bodyBuilder.WriteByte('\n')
 		}
@@ -133,4 +142,14 @@ func parseHtmlFragment(path string) ([]string, []string, error) {
 func makeDirectory(path string, nameSize int) error {
 	i := len(path) - nameSize
 	return os.MkdirAll(path[:i], 0755)
+}
+
+func noCompute(bodyLines []string) []string {
+	// nothing to do
+	return bodyLines
+}
+
+func markdownCompute(bodyLines []string) []string {
+	// TODO
+	return nil
 }
