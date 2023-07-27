@@ -30,6 +30,10 @@ import (
 )
 
 const htmlExt = "html"
+const htmlExtLen = len(htmlExt)
+const markdownExt = "md"
+const markdownExtLen = len(markdownExt)
+const markdownToHtmlDiff = htmlExtLen - markdownExtLen
 
 const partSep = "---"
 
@@ -78,11 +82,13 @@ func PrepareTemplates(projectPath string) error {
 			return nil
 		}
 		dotIndex++
+		nameLen := len(d.Name())
 		computeBody := noCompute
 		switch ext := destPath[dotIndex:]; ext {
 		case htmlExt:
-		case "md":
+		case markdownExt:
 			destPath = destPath[:dotIndex] + htmlExt
+			nameLen += markdownToHtmlDiff
 			computeBody = engine.markdownCompute
 		default:
 			return nil
@@ -93,7 +99,7 @@ func PrepareTemplates(projectPath string) error {
 			return err
 		}
 
-		err = makeDirectory(destPath, len(d.Name()))
+		err = makeDirectory(destPath, nameLen)
 		if err != nil {
 			return err
 		}
