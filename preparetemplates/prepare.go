@@ -91,6 +91,7 @@ func PrepareTemplates(projectPath string) error {
 			nameLen += markdownToHtmlDiff
 			computeBody = engine.markdownCompute
 		default:
+			// skip unrecognized file
 			return nil
 		}
 
