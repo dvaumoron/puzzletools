@@ -25,12 +25,17 @@ import (
 	"path/filepath"
 	"strings"
 
+	markdownextension "github.com/dvaumoron/puzzlemarkdownextension"
 	"github.com/yuin/goldmark"
 )
 
-const headerPlaceHolder = "{{.WidgetHeader}}"
+const htmlExt = "html"
+
+const partSep = "---"
+
+const headerPlaceHolder = "[[.WidgetHeader]]"
 const headerPlaceHolderLen = len(headerPlaceHolder)
-const bodyPlaceHolder = "{{.WidgetBody}}"
+const bodyPlaceHolder = "[[.WidgetBody]]"
 const bodyPlaceHolderLen = len(bodyPlaceHolder)
 
 const initJs = "<script type=\"text/javascript\" src=\"/static/"
@@ -72,10 +77,12 @@ func PrepareTemplates(projectPath string) error {
 		if dotIndex == -1 {
 			return nil
 		}
+		dotIndex++
 		computeBody := noCompute
-		switch ext := destPath[dotIndex+1:]; ext {
-		case "html":
+		switch ext := destPath[dotIndex:]; ext {
+		case htmlExt:
 		case "md":
+			destPath = destPath[:dotIndex] + htmlExt
 			computeBody = engine.markdownCompute
 		default:
 			return nil
@@ -127,7 +134,7 @@ func parseHtmlFragment(path string) ([]string, []string, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		if trimmed := strings.TrimSpace(scanner.Text()); trimmed != "" {
-			if trimmed == "Body:" {
+			if trimmed == partSep {
 				break
 			}
 			jsRefs = append(jsRefs, trimmed)
@@ -164,8 +171,7 @@ type markdownEngine struct {
 }
 
 func newMarkdownEngine() markdownEngine {
-	// TODO
-	return markdownEngine{}
+	return markdownEngine{md: markdownextension.NewDefaultEngine()}
 }
 
 func (e markdownEngine) markdownCompute(bodyLines []string) ([]string, error) {
