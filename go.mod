@@ -9,6 +9,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/spf13/cobra v1.7.0
 	github.com/wagslane/go-password-validator v0.3.0
+	github.com/yuin/goldmark v1.5.5
 	google.golang.org/grpc v1.54.0
 )
 

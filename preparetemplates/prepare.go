@@ -24,6 +24,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/yuin/goldmark"
 )
 
 const headerPlaceHolder = "{{.WidgetHeader}}"
@@ -58,6 +60,8 @@ func PrepareTemplates(projectPath string) error {
 
 	inSize := len(inPath)
 
+	engine := newMarkdownEngine()
+
 	return filepath.WalkDir(inPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {
 			return err
@@ -72,7 +76,7 @@ func PrepareTemplates(projectPath string) error {
 		switch ext := destPath[dotIndex+1:]; ext {
 		case "html":
 		case "md":
-			computeBody = markdownCompute
+			computeBody = engine.markdownCompute
 		default:
 			return nil
 		}
@@ -95,7 +99,13 @@ func PrepareTemplates(projectPath string) error {
 			bodyBuilder.WriteString(endJs)
 		}
 		bodyBuilder.WriteString(part2)
-		for _, line := range computeBody(bodyLines) {
+
+		bodyLines, err = computeBody(bodyLines)
+		if err != nil {
+			return err
+		}
+
+		for _, line := range bodyLines {
 			bodyBuilder.WriteString(line)
 			bodyBuilder.WriteByte('\n')
 		}
@@ -144,12 +154,30 @@ func makeDirectory(path string, nameSize int) error {
 	return os.MkdirAll(path[:i], 0755)
 }
 
-func noCompute(bodyLines []string) []string {
+func noCompute(bodyLines []string) ([]string, error) {
 	// nothing to do
-	return bodyLines
+	return bodyLines, nil
 }
 
-func markdownCompute(bodyLines []string) []string {
+type markdownEngine struct {
+	md goldmark.Markdown
+}
+
+func newMarkdownEngine() markdownEngine {
 	// TODO
-	return nil
+	return markdownEngine{}
+}
+
+func (e markdownEngine) markdownCompute(bodyLines []string) ([]string, error) {
+	var paramBuilder strings.Builder
+	for _, line := range bodyLines {
+		paramBuilder.WriteString(line)
+		paramBuilder.WriteByte('\n')
+	}
+
+	var resBuilder strings.Builder
+	if err := e.md.Convert([]byte(paramBuilder.String()), &resBuilder); err != nil {
+		return nil, err
+	}
+	return []string{resBuilder.String()}, nil
 }
