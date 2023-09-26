@@ -29,7 +29,7 @@ import (
 const UnknownServiceAddr = "service address unknown"
 
 var rootCmd = &cobra.Command{
-	Use:   "puzzletools [command]",
+	Use:   "puzzletools command",
 	Short: "puzzletools includes diverse features helping in puzzle project.",
 	Long: `puzzletools includes the following features:
 - prepare templates
