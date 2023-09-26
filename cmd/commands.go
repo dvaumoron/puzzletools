@@ -19,6 +19,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -26,7 +27,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const UnknownServiceAddr = "service address unknown"
+var errUnknownServiceAddr = errors.New("service address unknown")
 
 var rootCmd = &cobra.Command{
 	Use:   "puzzletools command",

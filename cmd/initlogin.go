@@ -19,8 +19,6 @@
 package cmd
 
 import (
-	"errors"
-
 	"github.com/dvaumoron/puzzletools/initlogindb"
 	"github.com/spf13/cobra"
 )
@@ -36,7 +34,7 @@ func newInitLoginCmd(defaultSaltServiceAddr string, defaultLoginServiceAddr stri
 		Args:  cobra.ExactArgs(2),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if saltServiceAddr == "" || loginServiceAddr == "" {
-				return errors.New(UnknownServiceAddr)
+				return errUnknownServiceAddr
 			}
 			return initlogindb.InitUser(saltServiceAddr, loginServiceAddr, args[0], args[1])
 		},

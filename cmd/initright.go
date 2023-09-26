@@ -19,7 +19,6 @@
 package cmd
 
 import (
-	"errors"
 	"strconv"
 
 	"github.com/dvaumoron/puzzletools/initrightdb"
@@ -42,7 +41,7 @@ func newInitRightCmd(defaultRightServiceAddr string) *cobra.Command {
 				return err
 			}
 			if rightServiceAddr == "" {
-				return errors.New(UnknownServiceAddr)
+				return errUnknownServiceAddr
 			}
 			return initrightdb.MakeUserAdmin(rightServiceAddr, userId)
 		},
