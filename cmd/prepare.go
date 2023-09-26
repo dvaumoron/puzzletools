@@ -34,7 +34,7 @@ func newPrepareCmd() *cobra.Command {
 - walk subfolder "/fragments" and write in subfolder "/templates".
 - inject the walked file in "/templates/main.html" to generate complete file`,
 		Args: cobra.MaximumNArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			var path string
 			if len(args) == 0 {
 				var err error

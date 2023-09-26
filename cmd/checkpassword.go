@@ -31,7 +31,7 @@ func newCheckPassword(defaultPass string) *cobra.Command {
 		Short: "check the strength of the password.",
 		Long:  "check the strength of the password : return indications to improve your proposal",
 		Args:  cobra.ExactArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			if defaultPass == "" {
 				fmt.Println("no default password to compare")
 				return

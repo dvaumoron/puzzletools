@@ -35,7 +35,7 @@ func newInitRightCmd(defaultRightServiceAddr string) *cobra.Command {
 - init default role
 - give the user with the id in argument, this role`,
 		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			userId, err := strconv.ParseUint(args[0], 10, 64)
 			if err != nil {
 				return err
