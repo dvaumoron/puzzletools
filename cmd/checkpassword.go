@@ -27,7 +27,7 @@ import (
 
 func newCheckPassword(defaultPass string) *cobra.Command {
 	return &cobra.Command{
-		Use:   "check [password]",
+		Use:   "check password",
 		Short: "check the strength of the password.",
 		Long:  "check the strength of the password : return indications to improve your proposal",
 		Args:  cobra.ExactArgs(1),
