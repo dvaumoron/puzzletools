@@ -29,6 +29,7 @@ import (
 
 var errUnknownServiceAddr = errors.New("service address unknown")
 
+// TODO migrate to urfave/cli ?
 var rootCmd = &cobra.Command{
 	Use:   "puzzletools command",
 	Short: "puzzletools includes diverse features helping in puzzle project.",
