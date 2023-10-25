@@ -20,35 +20,36 @@ package cmd
 
 import (
 	"github.com/dvaumoron/puzzletools/initlogindb"
-	"github.com/spf13/cobra"
+	"github.com/urfave/cli/v2"
 )
 
 var saltServiceAddr string
 var loginServiceAddr string
 
-func newInitLoginCmd(defaultSaltServiceAddr string, defaultLoginServiceAddr string) *cobra.Command {
-	initLoginCmd := &cobra.Command{
-		Use:   "initlogin userLogin userPassword",
-		Short: "init login database.",
-		Long:  "init login database : create an user with the arguments",
-		Args:  cobra.ExactArgs(2),
-		RunE: func(_ *cobra.Command, args []string) error {
-			if saltServiceAddr == "" || loginServiceAddr == "" {
-				return errUnknownServiceAddr
-			}
-			return initlogindb.InitUser(saltServiceAddr, loginServiceAddr, args[0], args[1])
+var initLoginCmd = &cli.Command{
+	Name:        "initlogin",
+	Usage:       "init login database",
+	ArgsUsage:   "userLogin userPassword",
+	Description: "init login database : create an user with the arguments",
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:        "salt-service-addr",
+			Usage:       "Address of the salt service",
+			EnvVars:     []string{"SALT_SERVICE_ADDR"},
+			Destination: &saltServiceAddr,
 		},
-	}
-
-	initLoginCmdFlags := initLoginCmd.Flags()
-	initLoginCmdFlags.StringVar(
-		&saltServiceAddr, "salt-service-addr", defaultSaltServiceAddr,
-		"Address of the salt service",
-	)
-	initLoginCmdFlags.StringVar(
-		&loginServiceAddr, "login-service-addr", defaultLoginServiceAddr,
-		"Address of the login service",
-	)
-
-	return initLoginCmd
+		&cli.StringFlag{
+			Name:        "login-service-addr",
+			Usage:       "Address of the right service",
+			EnvVars:     []string{"LOGIN_SERVICE_ADDR"},
+			Destination: &loginServiceAddr,
+		},
+	},
+	Action: func(cCtx *cli.Context) error {
+		args := cCtx.Args()
+		if err := initlogindb.InitUser(saltServiceAddr, loginServiceAddr, args.Get(0), args.Get(1)); err != nil {
+			return cli.Exit(err, 1)
+		}
+		return nil
+	},
 }

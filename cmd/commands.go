@@ -19,41 +19,32 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/spf13/cobra"
+	"github.com/urfave/cli/v2"
 )
 
-var errUnknownServiceAddr = errors.New("service address unknown")
-
-// TODO migrate to urfave/cli ?
-var rootCmd = &cobra.Command{
-	Use:   "puzzletools command",
-	Short: "puzzletools includes diverse features helping in puzzle project.",
-	Long: `puzzletools includes the following features:
-- prepare templates
-- init login db
-- init right db
-- check password`,
-}
-
-func init() {
-	if godotenv.Overload() == nil {
-		fmt.Println("Loaded .env file")
-	}
-
-	rootCmd.AddCommand(newInitRightCmd(os.Getenv("RIGHT_SERVICE_ADDR")))
-	rootCmd.AddCommand(newInitLoginCmd(os.Getenv("SALT_SERVICE_ADDR"), os.Getenv("LOGIN_SERVICE_ADDR")))
-	rootCmd.AddCommand(newPrepareCmd())
-	rootCmd.AddCommand(newCheckPassword(os.Getenv("DEFAULT_PASSWORD")))
+// TODO check arguments number on subcommands
+// TODO also check service addr presence
+var app = &cli.App{
+	Usage:     "puzzletools includes diverse features helping in puzzle project.",
+	UsageText: "puzzletools command",
+	Commands: []*cli.Command{
+		initRightCmd,
+		initLoginCmd,
+		prepareCmd,
+		checkPasswordCmd,
+	},
+	Suggest: true,
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
+	if godotenv.Overload() == nil {
+		fmt.Println("Loaded .env file")
+	}
+	if err := app.Run(os.Args); err != nil {
 		fmt.Println(err)
-		os.Exit(1)
 	}
 }

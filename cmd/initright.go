@@ -22,35 +22,31 @@ import (
 	"strconv"
 
 	"github.com/dvaumoron/puzzletools/initrightdb"
-	"github.com/spf13/cobra"
+	"github.com/urfave/cli/v2"
 )
 
 var rightServiceAddr string
 
-func newInitRightCmd(defaultRightServiceAddr string) *cobra.Command {
-	initRightCmd := &cobra.Command{
-		Use:   "initright userId",
-		Short: "init right database.",
-		Long: `init right database :
+var initRightCmd = &cli.Command{
+	Name:      "initright",
+	Usage:     "init right database",
+	ArgsUsage: "userId",
+	Description: `init right database :
 - init default role
 - give the user with the id in argument, this role`,
-		Args: cobra.ExactArgs(1),
-		RunE: func(_ *cobra.Command, args []string) error {
-			userId, err := strconv.ParseUint(args[0], 10, 64)
-			if err != nil {
-				return err
-			}
-			if rightServiceAddr == "" {
-				return errUnknownServiceAddr
-			}
-			return initrightdb.MakeUserAdmin(rightServiceAddr, userId)
+	Flags: []cli.Flag{
+		&cli.StringFlag{
+			Name:        "right-service-addr",
+			Usage:       "Address of the right service",
+			EnvVars:     []string{"RIGHT_SERVICE_ADDR"},
+			Destination: &rightServiceAddr,
 		},
-	}
-
-	initRightCmd.Flags().StringVar(
-		&rightServiceAddr, "right-service-addr", defaultRightServiceAddr,
-		"Address of the right service",
-	)
-
-	return initRightCmd
+	},
+	Action: func(cCtx *cli.Context) error {
+		userId, err := strconv.ParseUint(cCtx.Args().Get(0), 10, 64)
+		if err == nil {
+			err = initrightdb.MakeUserAdmin(rightServiceAddr, userId)
+		}
+		return cli.Exit(err, 1)
+	},
 }
