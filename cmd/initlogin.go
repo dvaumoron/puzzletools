@@ -19,9 +19,13 @@
 package cmd
 
 import (
+	"errors"
+
 	"github.com/dvaumoron/puzzletools/initlogindb"
 	"github.com/urfave/cli/v2"
 )
+
+var errNoLoginOrPassword = errors.New("userLogin and userPassword required")
 
 var saltServiceAddr string
 var loginServiceAddr string
@@ -46,10 +50,13 @@ var initLoginCmd = &cli.Command{
 		},
 	},
 	Action: func(cCtx *cli.Context) error {
-		args := cCtx.Args()
-		if err := initlogindb.InitUser(saltServiceAddr, loginServiceAddr, args.Get(0), args.Get(1)); err != nil {
-			return cli.Exit(err, 1)
+		err := errUnknownServiceAddr
+		if saltServiceAddr != "" && loginServiceAddr != "" {
+			err = errNoLoginOrPassword
+			if args := cCtx.Args(); args.Len() > 1 {
+				err = initlogindb.InitUser(saltServiceAddr, loginServiceAddr, args.Get(0), args.Get(1))
+			}
 		}
-		return nil
+		return err
 	},
 }

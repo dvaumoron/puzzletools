@@ -19,6 +19,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -26,8 +27,8 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
-// TODO check arguments number on subcommands
-// TODO also check service addr presence
+var errUnknownServiceAddr = errors.New("service address unknown")
+
 var app = &cli.App{
 	Usage:     "puzzletools includes diverse features helping in puzzle project.",
 	UsageText: "puzzletools command",
@@ -37,7 +38,8 @@ var app = &cli.App{
 		prepareCmd,
 		checkPasswordCmd,
 	},
-	Suggest: true,
+	Suggest:        true,
+	ExitErrHandler: func(cCtx *cli.Context, err error) {},
 }
 
 func Execute() {
@@ -46,5 +48,6 @@ func Execute() {
 	}
 	if err := app.Run(os.Args); err != nil {
 		fmt.Println(err)
+		os.Exit(1)
 	}
 }

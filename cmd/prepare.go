@@ -40,9 +40,8 @@ var prepareCmd = &cli.Command{
 			path = args.First()
 		} else {
 			var err error
-			path, err = os.Getwd()
-			if err != nil {
-				return cli.Exit(err, 1)
+			if path, err = os.Getwd(); err != nil {
+				return err
 			}
 		}
 		return preparetemplates.PrepareTemplates(path)

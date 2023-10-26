@@ -19,11 +19,14 @@
 package cmd
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/dvaumoron/puzzletools/initrightdb"
 	"github.com/urfave/cli/v2"
 )
+
+var errNoUserId = errors.New("userId required")
 
 var rightServiceAddr string
 
@@ -43,10 +46,17 @@ var initRightCmd = &cli.Command{
 		},
 	},
 	Action: func(cCtx *cli.Context) error {
-		userId, err := strconv.ParseUint(cCtx.Args().Get(0), 10, 64)
-		if err == nil {
-			err = initrightdb.MakeUserAdmin(rightServiceAddr, userId)
+		err := errNoUserId
+		if args := cCtx.Args(); args.Present() {
+			var userId uint64
+			if userId, err = strconv.ParseUint(args.Get(0), 10, 64); err == nil {
+				if rightServiceAddr == "" {
+					err = errUnknownServiceAddr
+				} else {
+					err = initrightdb.MakeUserAdmin(rightServiceAddr, userId)
+				}
+			}
 		}
-		return cli.Exit(err, 1)
+		return err
 	},
 }

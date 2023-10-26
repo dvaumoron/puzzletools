@@ -19,6 +19,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -26,21 +27,21 @@ import (
 	passwordvalidator "github.com/wagslane/go-password-validator"
 )
 
+var errNoDefaultPassword = errors.New("no default password to compare")
+
 var checkPasswordCmd = &cli.Command{
 	Name:        "check",
 	Usage:       "check the strength of a password",
 	ArgsUsage:   "password",
 	Description: "check the strength of the password : return indications to improve your proposal",
 	Action: func(cCtx *cli.Context) error {
-		msg := "no default password to compare"
+		err := errNoDefaultPassword
 		if defaultPass := os.Getenv("DEFAULT_PASSWORD"); defaultPass != "" {
-			msg = "password seems strong"
 			minEntropy := passwordvalidator.GetEntropy(defaultPass)
-			if err := passwordvalidator.Validate(cCtx.Args().Get(0), minEntropy); err != nil {
-				msg = err.Error()
+			if err = passwordvalidator.Validate(cCtx.Args().Get(0), minEntropy); err == nil {
+				fmt.Println("password seems strong")
 			}
 		}
-		fmt.Println(msg)
-		return nil
+		return err
 	},
 }
