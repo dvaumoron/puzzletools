@@ -21,27 +21,28 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"os"
 
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
 	passwordvalidator "github.com/wagslane/go-password-validator"
 )
 
 var errNoDefaultPassword = errors.New("no default password to compare")
 
-var checkPasswordCmd = &cli.Command{
-	Name:        "check",
-	Usage:       "check the strength of a password",
-	ArgsUsage:   "password",
-	Description: "check the strength of the password : return indications to improve your proposal",
-	Action: func(cCtx *cli.Context) error {
-		err := errNoDefaultPassword
-		if defaultPass := os.Getenv("DEFAULT_PASSWORD"); defaultPass != "" {
-			minEntropy := passwordvalidator.GetEntropy(defaultPass)
-			if err = passwordvalidator.Validate(cCtx.Args().Get(0), minEntropy); err == nil {
-				fmt.Println("password seems strong")
+func newCheckPassword(defaultPass string) *cobra.Command {
+	return &cobra.Command{
+		Use:   "check password",
+		Short: "check the strength of the password.",
+		Long:  "check the strength of the password : return indications to improve your proposal",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(_ *cobra.Command, args []string) error {
+			err := errNoDefaultPassword
+			if defaultPass != "" {
+				minEntropy := passwordvalidator.GetEntropy(defaultPass)
+				if err = passwordvalidator.Validate(args[0], minEntropy); err == nil {
+					fmt.Println("password seems strong")
+				}
 			}
-		}
-		return err
-	},
+			return err
+		},
+	}
 }

@@ -24,29 +24,34 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
 )
 
 var errUnknownServiceAddr = errors.New("service address unknown")
 
-var app = &cli.App{
-	Usage:     "puzzletools includes diverse features helping in puzzle project.",
-	UsageText: "puzzletools command",
-	Commands: []*cli.Command{
-		initRightCmd,
-		initLoginCmd,
-		prepareCmd,
-		checkPasswordCmd,
-	},
-	Suggest:        true,
-	ExitErrHandler: func(cCtx *cli.Context, err error) {},
+var rootCmd = &cobra.Command{
+	Use:   "puzzletools command",
+	Short: "puzzletools includes diverse features helping in puzzle project.",
+	Long: `puzzletools includes the following features:
+ - prepare templates
+ - init login db
+ - init right db
+ - check password`,
 }
 
-func Execute() {
+func init() {
 	if godotenv.Overload() == nil {
 		fmt.Println("Loaded .env file")
 	}
-	if err := app.Run(os.Args); err != nil {
+
+	rootCmd.AddCommand(newInitRightCmd(os.Getenv("RIGHT_SERVICE_ADDR")))
+	rootCmd.AddCommand(newInitLoginCmd(os.Getenv("SALT_SERVICE_ADDR"), os.Getenv("LOGIN_SERVICE_ADDR")))
+	rootCmd.AddCommand(newPrepareCmd())
+	rootCmd.AddCommand(newCheckPassword(os.Getenv("DEFAULT_PASSWORD")))
+}
+
+func Execute() {
+	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

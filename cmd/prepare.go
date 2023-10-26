@@ -22,28 +22,30 @@ import (
 	"os"
 
 	"github.com/dvaumoron/puzzletools/preparetemplates"
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
 )
 
-var prepareCmd = &cli.Command{
-	Name:      "prepare",
-	Usage:     "prepare templates",
-	ArgsUsage: "[projectPath]",
-	Description: `prepare templates :
-- without arg work in the current folder
-- walk subfolder "/fragments" and write in subfolder "/templates".
-- inject the walked file in "/templates/main.html" to generate complete file`,
-	Action: func(cCtx *cli.Context) error {
-		args := cCtx.Args()
-		var path string
-		if args.Present() {
-			path = args.First()
-		} else {
-			var err error
-			if path, err = os.Getwd(); err != nil {
-				return err
+func newPrepareCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "prepare [projectPath]",
+		Short: "prepare templates.",
+		Long: `prepare templates :
+ - without arg work in the current folder
+ - walk subfolder "/fragments" and write in subfolder "/templates".
+ - inject the walked file in "/templates/main.html" to generate complete file`,
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(_ *cobra.Command, args []string) error {
+			var path string
+			if len(args) == 0 {
+				var err error
+				path, err = os.Getwd()
+				if err != nil {
+					return err
+				}
+			} else {
+				path = args[0]
 			}
-		}
-		return preparetemplates.PrepareTemplates(path)
-	},
+			return preparetemplates.PrepareTemplates(path)
+		},
+	}
 }

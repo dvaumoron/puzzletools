@@ -19,44 +19,36 @@
 package cmd
 
 import (
-	"errors"
-
 	"github.com/dvaumoron/puzzletools/initlogindb"
-	"github.com/urfave/cli/v2"
+	"github.com/spf13/cobra"
 )
-
-var errNoLoginOrPassword = errors.New("userLogin and userPassword required")
 
 var saltServiceAddr string
 var loginServiceAddr string
 
-var initLoginCmd = &cli.Command{
-	Name:        "initlogin",
-	Usage:       "init login database",
-	ArgsUsage:   "userLogin userPassword",
-	Description: "init login database : create an user with the arguments",
-	Flags: []cli.Flag{
-		&cli.StringFlag{
-			Name:        "salt-service-addr",
-			Usage:       "Address of the salt service",
-			EnvVars:     []string{"SALT_SERVICE_ADDR"},
-			Destination: &saltServiceAddr,
-		},
-		&cli.StringFlag{
-			Name:        "login-service-addr",
-			Usage:       "Address of the right service",
-			EnvVars:     []string{"LOGIN_SERVICE_ADDR"},
-			Destination: &loginServiceAddr,
-		},
-	},
-	Action: func(cCtx *cli.Context) error {
-		err := errUnknownServiceAddr
-		if saltServiceAddr != "" && loginServiceAddr != "" {
-			err = errNoLoginOrPassword
-			if args := cCtx.Args(); args.Len() > 1 {
-				err = initlogindb.InitUser(saltServiceAddr, loginServiceAddr, args.Get(0), args.Get(1))
+func newInitLoginCmd(defaultSaltServiceAddr string, defaultLoginServiceAddr string) *cobra.Command {
+	initLoginCmd := &cobra.Command{
+		Use:   "initlogin userLogin userPassword",
+		Short: "init login database.",
+		Long:  "init login database : create an user with the arguments",
+		Args:  cobra.ExactArgs(2),
+		RunE: func(_ *cobra.Command, args []string) error {
+			if saltServiceAddr == "" || loginServiceAddr == "" {
+				return errUnknownServiceAddr
 			}
-		}
-		return err
-	},
+			return initlogindb.InitUser(saltServiceAddr, loginServiceAddr, args[0], args[1])
+		},
+	}
+
+	initLoginCmdFlags := initLoginCmd.Flags()
+	initLoginCmdFlags.StringVar(
+		&saltServiceAddr, "salt-service-addr", defaultSaltServiceAddr,
+		"Address of the salt service",
+	)
+	initLoginCmdFlags.StringVar(
+		&loginServiceAddr, "login-service-addr", defaultLoginServiceAddr,
+		"Address of the login service",
+	)
+
+	return initLoginCmd
 }
