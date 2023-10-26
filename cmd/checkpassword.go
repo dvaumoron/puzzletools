@@ -31,8 +31,8 @@ var errNoDefaultPassword = errors.New("no default password to compare")
 func newCheckPassword(defaultPass string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "check password",
-		Short: "check the strength of the password.",
-		Long:  "check the strength of the password : return indications to improve your proposal",
+		Short: "Check the strength of a password",
+		Long:  "Check the strength of the password : return indications to improve your proposal",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
 			err := errNoDefaultPassword

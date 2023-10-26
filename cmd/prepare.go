@@ -28,11 +28,14 @@ import (
 func newPrepareCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "prepare [projectPath]",
-		Short: "prepare templates.",
-		Long: `prepare templates :
- - without arg work in the current folder
- - walk subfolder "/fragments" and write in subfolder "/templates".
- - inject the walked file in "/templates/main.html" to generate complete file`,
+		Short: "Prepare templates",
+		Long: `Prepare templates :
+- without arg work in the current folder
+- walk subfolder "/fragments" and write in subfolder "/templates"
+- walked markdown (.md) file are converted into html fragment
+- walked html file are used directly
+- other file are ignored
+- inject the walked file in "/templates/main.html" to generate complete file`,
 		Args: cobra.MaximumNArgs(1),
 		RunE: func(_ *cobra.Command, args []string) error {
 			var path string

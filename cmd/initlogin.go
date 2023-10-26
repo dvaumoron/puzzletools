@@ -29,8 +29,8 @@ var loginServiceAddr string
 func newInitLoginCmd(defaultSaltServiceAddr string, defaultLoginServiceAddr string) *cobra.Command {
 	initLoginCmd := &cobra.Command{
 		Use:   "initlogin userLogin userPassword",
-		Short: "init login database.",
-		Long:  "init login database : create an user with the arguments",
+		Short: "Init login database",
+		Long:  "Init login database : create an user with the arguments",
 		Args:  cobra.ExactArgs(2),
 		RunE: func(_ *cobra.Command, args []string) error {
 			if saltServiceAddr == "" || loginServiceAddr == "" {

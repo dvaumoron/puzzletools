@@ -30,8 +30,8 @@ var rightServiceAddr string
 func newInitRightCmd(defaultRightServiceAddr string) *cobra.Command {
 	initRightCmd := &cobra.Command{
 		Use:   "initright userId",
-		Short: "init right database.",
-		Long: `init right database :
+		Short: "Init right database",
+		Long: `Init right database :
  - init default role
  - give the user with the id in argument, this role`,
 		Args: cobra.ExactArgs(1),
