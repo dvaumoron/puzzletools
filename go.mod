@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/dvaumoron/puzzleloginservice v1.7.0
-	github.com/dvaumoron/puzzlemarkdownextension v1.0.0
+	github.com/dvaumoron/puzzlemarkdownextension v1.10.0
 	github.com/dvaumoron/puzzlerightservice v1.3.0
 	github.com/dvaumoron/puzzlesaltclient v1.1.2
 	github.com/joho/godotenv v1.5.1

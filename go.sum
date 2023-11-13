@@ -3,8 +3,8 @@ github.com/dvaumoron/puzzlegrpcclient v1.0.1 h1:K8NCrwcXNyf+9VGTYIZeMCE+ghwp0pRz
 github.com/dvaumoron/puzzlegrpcclient v1.0.1/go.mod h1:xRuvsrprB2H9highjS6vS/kEvPTcN9oB/RoB9JySEMc=
 github.com/dvaumoron/puzzleloginservice v1.7.0 h1:o5W2j/rbUeSctEe8+yDc49/3R5vzfwtOVH9Lse5BFpc=
 github.com/dvaumoron/puzzleloginservice v1.7.0/go.mod h1:K/m2nN30p+uAJamWT85Vh1Mtea7+ahSz+fnIughCok0=
-github.com/dvaumoron/puzzlemarkdownextension v1.0.0 h1:MnGDILx1JYfn0uqECgyTvSrTI/yzEjE/jIYQogLRcRo=
-github.com/dvaumoron/puzzlemarkdownextension v1.0.0/go.mod h1:6DqrLyRJufVBRuKB84yMLwXF3v8H77VHypZNhJuwIhk=
+github.com/dvaumoron/puzzlemarkdownextension v1.10.0 h1:gpIY3a5lR2hlS1TmQIW7BajBBGAd5GRe0tewSsXS0l8=
+github.com/dvaumoron/puzzlemarkdownextension v1.10.0/go.mod h1:6DqrLyRJufVBRuKB84yMLwXF3v8H77VHypZNhJuwIhk=
 github.com/dvaumoron/puzzlerightservice v1.3.0 h1:QUWa3H2uSo/Mh7d7vKQjSLZ6Q362oNcksJXvVO2aTwI=
 github.com/dvaumoron/puzzlerightservice v1.3.0/go.mod h1:Nj4Jj1ica09zvsATXKDhUqGWLWjAvrkt60V92ObrPvk=
 github.com/dvaumoron/puzzlesaltclient v1.1.2 h1:5Cm/WFdEmr4SpbSvNIKoIgsIY4dNYnMYciqTIejtfT8=
