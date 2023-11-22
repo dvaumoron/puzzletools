@@ -30,6 +30,7 @@ import (
 var errUnknownServiceAddr = errors.New("service address unknown")
 
 var rootCmd = &cobra.Command{
+	Use:  "puzzletools",
 	Long: "puzzletools includes diverse features helping in puzzle project",
 }
 
